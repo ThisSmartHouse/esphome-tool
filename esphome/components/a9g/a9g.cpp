@@ -8,21 +8,17 @@ static const char *TAG = "a9g";
 
 void A9G::setup() {
 
-    pinMode(this->a9g_power_on_pin_, OUTPUT);
-    pinMode(this->a9g_power_off_pin_, OUTPUT);
-    pinMode(this->a9g_low_power_pin_, OUTPUT);
-
-    digitalWrite(this->a9g_power_on_pin_, HIGH);
-    digitalWrite(this->a9g_power_off_pin_, LOW);
-    digitalWrite(this->a9g_low_power_pin_, HIGH);
+    this->a9g_power_on_pin_->digital_write(true);
+    this->a9g_power_off_pin_->digital_write(false);
+    this->a9g_low_power_pin_->digital_write(true);
 
     ESP_LOGD(TAG, "Powering on A9G...");
-    delay(2000);
 
-    digitalWrite(this->a9g_power_on_pin_, LOW);
-    delay(3000);
-    digitalWrite(this->a9g_power_on_pin_, HIGH);
-    delay(5000);
+    delay(2000); // NOLINT
+    this->a9g_power_on_pin_->digital_write(false);
+    delay(3000); // NOLINT
+    this->a9g_power_on_pin_->digital_write(true);
+    delay(5000); // NOLINT
 
     this->send_command("AT+GPS=1");
 
@@ -88,13 +84,12 @@ A9GCoordinate* A9G::parse_location_response(uint8_t *response) {
                     if (lat_size + 1 <= sizeof(lat)) {
                         int idx2;
                         size_t lon_size;
-                        
 
                         ESP_LOGD(TAG, "Latitude Str Size: %d", lat_size);
                         strncpy(&lat[0], (const char *)&response[17], lat_size);
 
-                        for(idx2 = idx; 
-                            (idx2 < strlen((const char *)response)) && (response[idx2] != '\r'); 
+                        for(idx2 = idx;
+                            (idx2 < strlen((const char *)response)) && (response[idx2] != '\r');
                             idx2++);
 
                         lon_size = idx2 - idx -1;
@@ -126,7 +121,7 @@ A9GCoordinate* A9G::parse_location_response(uint8_t *response) {
 void A9G::update() {
     uint8_t readBuffer[100];
     A9GCoordinate *coordinates;
-    
+
     if (!this->a9g_initialized_)
     {
         return;
@@ -135,7 +130,7 @@ void A9G::update() {
     this->send_command("AT+LOCATION=2", &readBuffer[0], sizeof(readBuffer));
 
     coordinates = this->parse_location_response(&readBuffer[0]);
-    
+
     if ((coordinates->latitude != -100) && (coordinates->longitude != -200)) {
         this->latitude_ = coordinates->latitude;
         this->longitude_ = coordinates->longitude;
