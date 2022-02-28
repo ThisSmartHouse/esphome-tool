@@ -1,10 +1,11 @@
 #pragma once
 
-#include "esphome/components/improv/improv.h"
 #include "esphome/components/wifi/wifi_component.h"
 #include "esphome/core/component.h"
 #include "esphome/core/defines.h"
 #include "esphome/core/helpers.h"
+
+#include <improv.h>
 
 #ifdef USE_ARDUINO
 #include <HardwareSerial.h>
@@ -31,7 +32,7 @@ class ImprovSerialComponent : public Component {
   void loop() override;
   void dump_config() override;
 
-  float get_setup_priority() const override { return setup_priority::HARDWARE; }
+  float get_setup_priority() const override { return setup_priority::AFTER_WIFI; }
 
  protected:
   bool parse_improv_serial_byte_(uint8_t byte);
